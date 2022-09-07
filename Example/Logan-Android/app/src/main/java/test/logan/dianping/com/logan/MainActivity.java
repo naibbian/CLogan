@@ -105,13 +105,13 @@ public class MainActivity extends Activity {
             public void run() {
                 super.run();
                 try {
-                    for (int i = 0; i < 9; i++) {
-                        Log.d(TAG, "times : " + i);
+                    for (int i = 0; i < 9000000; i++) {
+//                        Log.d(TAG, "times : " + i);
                         Logan.w(String.valueOf(i), 1);
-                        Thread.sleep(5);
+//                        Thread.sleep(5);
                     }
                     Log.d(TAG, "write log end");
-                } catch (InterruptedException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }

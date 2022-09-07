@@ -31,6 +31,10 @@ public class MyApplication extends Application {
                 .setEncryptKey16("0123456789012345".getBytes())
                 .setEncryptIV16("0123456789012345".getBytes())
                 .build();
+        Log.e(TAG, "CachePath:" + getApplicationContext().getFilesDir().getAbsolutePath());
+        Log.e(TAG, "Path:" + getApplicationContext().getExternalFilesDir(null).getAbsolutePath()
+                + File.separator + FILE_NAME);
+
         Logan.init(config);
         Logan.setDebug(true);
         Logan.setOnLoganProtocolStatus(new OnLoganProtocolStatus() {
