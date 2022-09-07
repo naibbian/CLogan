@@ -22,8 +22,11 @@
 
 package com.dianping.logan;
 
+import android.util.Log;
+
 class LoganProtocol implements LoganProtocolHandler {
 
+    private static final String TAG = LoganProtocol.class.getCanonicalName();
     private static LoganProtocol sLoganProtocol;
 
     private LoganProtocolHandler mCurProtocol;
@@ -52,7 +55,7 @@ class LoganProtocol implements LoganProtocolHandler {
 
     @Override
     public void logan_write(int flag, String log, long local_time, String thread_name,
-            long thread_id, boolean is_main) {
+                            long thread_id, boolean is_main) {
         if (mCurProtocol != null) {
             mCurProtocol.logan_write(flag, log, local_time, thread_name, thread_id,
                     is_main);
@@ -61,6 +64,7 @@ class LoganProtocol implements LoganProtocolHandler {
 
     @Override
     public void logan_open(String file_name) {
+        Log.e(TAG, "logan_open:" + file_name);
         if (mCurProtocol != null) {
             mCurProtocol.logan_open(file_name);
         }
@@ -68,7 +72,7 @@ class LoganProtocol implements LoganProtocolHandler {
 
     @Override
     public void logan_init(String cache_path, String dir_path, int max_file, String encrypt_key_16,
-            String encrypt_iv_16) {
+                           String encrypt_iv_16) {
         if (mIsInit) {
             return;
         }

@@ -32,13 +32,23 @@
 #include "base_util.h"
 #include "console_util.h"
 #include "clogan_status.h"
+#include <stdio.h>
+#include <time.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <stdatomic.h>
+#include <android/log.h>
 
 static int is_init_ok = 0;
 static int is_open_ok = 0;
 
+#define  LOGI(...) __android_log_print(ANDROID_LOG_INFO, "========= Info =========   ", __VA_ARGS__)
+
 static unsigned char *_logan_buffer = NULL; //缓存Buffer (不释放)
 
 static char *_dir_path = NULL; //目录路径 (不释放)
+
+static char *_file_name = NULL; //目录文件 (不释放)
 
 static char *_mmap_file_path = NULL; //mmap文件路径 (不释放)
 
@@ -48,9 +58,20 @@ static unsigned char *_cache_buffer_buffer = NULL; //临时缓存文件 (不释�
 
 static int buffer_type; //缓存区块的类型
 
-static long max_file_len = LOGAN_LOGFILE_MAXLENGTH;
+static long max_file_len = LOGAN_LOGFILE_MAXLENGTH; //单个文件最大 文件大小
+
+static long max_file_count = LOGAN_LOGFILE_MAXCOUNT; // 单日最大 文件数量
 
 static cLogan_model *logan_model = NULL; //(不释放)
+
+bool IsDigitChar(char i);
+
+bool IsValidFullDateStr(char date[15]);
+
+void GetDateBeforSpecDays(int days, char date[15]);
+
+int DeleteFileByDays(char *fileDir, int days, int clearMode);
+
 
 int init_file_clogan(cLogan_model *logan_model) {
     int is_ok = 0;
@@ -318,8 +339,102 @@ clogan_init(const char *cache_dirs, const char *path_dirs, int max_file, const c
             _mmap_file_path = NULL;
         }
     }
+    DeleteFileByDays(path_dirs, 3, 2);
     return back;
 }
+
+
+/**
+ * 删除过期文件
+ * fileDir:文件路径
+ * days:天数
+ * clearMode： 1、按照文件，2、按照文件创建日期
+ */
+int DeleteFileByDays(char *fileDir, int days, int clearMode) {
+    int ret = 0;
+    int fileTotalNum = 0;
+    int j = 0, len = 0, i = 0;
+    char fullFileName[512 + 1];
+    char fileName[256 + 1];
+    char fileDate[14 + 1];
+    char oldDate[14 + 1];
+
+    struct dirent **nameList;
+    struct stat fileInfo;
+    struct tm *fileTM;
+    // 获取前N天的日期
+    memset(oldDate, 0, sizeof(oldDate));
+    GetDateBeforSpecDays(days, oldDate);
+    // 打开目录
+    if ((fileTotalNum = scandir(fileDir, &nameList, 0, alphasort)) < 0) {
+        printf("in DeleteFileByDays:: scandir [%s] error!\n", fileDir);
+        //free(nameList);
+        printf("打开文件目录失败");
+        return (fileTotalNum);
+    }
+    for (j = 0; j < fileTotalNum; j++) {
+        len = sprintf(fileName, "%s", nameList[j]->d_name);
+        if (fileName[0] == '.')
+            continue;
+        fileName[len] = 0;
+        len = sprintf(fullFileName, "%s/%s", fileDir, fileName);
+        fullFileName[len] = 0;
+        if (clearMode == 1)     // 根据文件名清理
+        {
+            len = 0;
+            for (i = 0; i < strlen(fileName); i++) {
+                if (IsDigitChar(fileName[i]))
+                    len += sprintf(fileDate + len, "%c", fileName[i]);
+                else
+                    len = 0;
+                if (len == 8)
+                    break;
+            }
+            fileDate[len] = 0;
+            if (!IsValidFullDateStr(fileDate))
+                continue;
+        } else if (clearMode == 2)        // 根据文件属性
+        {
+            memset(&fileInfo, 0, sizeof(fileInfo));
+            if ((ret = stat(fullFileName, &fileInfo)) < 0) {
+                printf("in DeleteFileByDays:: stat [%s] error!\n", fullFileName);
+                continue;
+            }
+            // 获取文件时间
+            fileTM = localtime(&fileInfo.st_mtime);
+            memset(fileDate, 0, sizeof(fileDate));
+            strftime(fileDate, sizeof(fileDate), "%Y%m%d", fileTM);
+        }
+        // 检查是否需要删除文件
+        if (strcmp(fileDate, oldDate) <= 0) {
+            if ((ret = unlink(fullFileName)) < 0) {
+                printf("in DeleteFileByDays:: unlink[%s] error!\n", fullFileName);
+                continue;
+            } else
+                printf("in DeleteFileByDays:: delete[%s]!\n", fullFileName);
+        }
+    }
+    free(nameList);
+    return 0;
+}
+
+void GetDateBeforSpecDays(int days, char date[15]) {
+    time_t lt = time(NULL);
+    long seconds = 24 * 60 * 60 * days;//  24小时*days
+    lt -= seconds;
+    struct tm *times = localtime(&lt);
+    strftime(date, sizeof(date), "%Y%m%d", times);
+}
+
+
+bool IsValidFullDateStr(char date[15]) {
+    return 0;
+}
+
+bool IsDigitChar(char i) {
+    return 0;
+}
+
 
 /*
  * 对mmap添加header和确定总长度位置
@@ -409,7 +524,11 @@ int clogan_open(const char *pathname) {
         }
     }
     char *temp = NULL;
-
+    if (_file_name == NULL) {
+        _file_name = (char *) malloc(strlen(pathname) + 1);
+        strcpy(_file_name, pathname);
+        LOGI("clogan_write _file_name init :[%s]", _file_name);
+    }
     size_t file_path_len = strlen(_dir_path) + strlen(pathname) + 1;
     char *temp_file = malloc(file_path_len); // 日志文件路径
     if (NULL != temp_file) {
@@ -419,7 +538,7 @@ int clogan_open(const char *pathname) {
         temp += strlen(_dir_path);
         memcpy(temp, pathname, strlen(pathname)); //创建文件路径
         logan_model->file_path = temp_file;
-
+        logan_model->file_count++;
         if (!init_file_clogan(logan_model)) {  //初始化文件IO和文件大小
             is_open_ok = 0;
             back = CLOGAN_OPEN_FAIL_IO;
@@ -687,10 +806,21 @@ clogan_write(int flag, char *log, long long local_time, char *thread_name, long 
         return back;
     }
 
-    if(logan_model->file_len > max_file_len) {
-        printf_clogan("clogan_write > beyond max file , cant write log\n");
-        back = CLOAGN_WRITE_FAIL_MAXFILE;
-        return back;
+    if (logan_model->file_len > max_file_len) {
+        if (logan_model->file_count >= max_file_count) {
+            printf_clogan("clogan_write > beyond max file , cant write log\n");
+            back = CLOAGN_WRITE_FAIL_MAXFILE;
+            return back;
+        }
+        LOGI("clogan_write file_name:[%s]", _file_name);
+        LOGI("clogan_write file_count:[%d]", logan_model->file_count);
+        LOGI("clogan_write file_len:[%ld]", logan_model->file_len);
+        char *nextFile = (char *) malloc(strlen(_file_name) + strlen("1") + 1);
+        strcpy(nextFile, _file_name);
+        char cpd[strlen("1")];
+        sprintf(cpd, "_%d", logan_model->file_count);
+        strcat(nextFile, cpd);
+        clogan_open(nextFile);
     }
 
     //判断MMAP文件是否存在,如果被删除,用内存缓存

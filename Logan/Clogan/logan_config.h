@@ -49,6 +49,8 @@
 
 #define LOGAN_LOGFILE_MAXLENGTH 10 * 1024 * 1024
 
+#define LOGAN_LOGFILE_MAXCOUNT 3
+
 #define LOGAN_WRITE_SECTION 20 * 1024 //多大长度做分片
 
 #define LOGAN_RETURN_SYMBOL "\n"
@@ -64,7 +66,7 @@
 typedef struct logan_model_struct {
     int total_len; //数据长度
     char *file_path; //文件路径
-
+    
     int is_malloc_zlib;
     z_stream *strm;
     int zlib_type; //压缩类型
@@ -78,6 +80,8 @@ typedef struct logan_model_struct {
 
     long file_len; //文件大小
 
+    int file_count; //文件数量
+    
     unsigned char *buffer_point; //缓存的指针 (不变)
     unsigned char *last_point; //最后写入位置的指针
     unsigned char *total_point; //总数的指针 (可能变) , 给c看,低字节

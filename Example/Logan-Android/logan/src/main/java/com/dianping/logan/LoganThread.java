@@ -179,12 +179,18 @@ class LoganThread extends Thread {
                         if (TextUtils.isEmpty(item)) {
                             continue;
                         }
-                        String[] longStrArray = item.split("\\.");
+                        String[] longStrArray = item.split("\\_");
                         if (longStrArray.length > 0) {  //小于时间就删除
-                            long longItem = Long.valueOf(longStrArray[0]);
-                            if (longItem <= deleteTime && longStrArray.length == 1) {
-                                new File(mPath, item).delete(); //删除文件
+                            long longItem = 0;
+                            try {
+                                longItem = Long.valueOf(longStrArray[0]);
+                                if (longItem <= deleteTime && longStrArray.length == 1) {
+                                    new File(mPath, item).delete(); //删除文件
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
+
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -196,7 +202,7 @@ class LoganThread extends Thread {
 
     private void doWriteLog2File(WriteAction action) {
         if (Logan.sDebug) {
-            Log.d(TAG, "Logan write start");
+//            Log.d(TAG, "Logan write start");
         }
         if (mFileDirectory == null) {
             mFileDirectory = new File(mPath);
