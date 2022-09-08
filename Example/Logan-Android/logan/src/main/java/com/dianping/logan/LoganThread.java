@@ -190,7 +190,6 @@ class LoganThread extends Thread {
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
-
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -214,6 +213,7 @@ class LoganThread extends Thread {
             long deleteTime = tempCurrentDay - mSaveTime;
             deleteExpiredFile(deleteTime);
             mCurrentDay = tempCurrentDay;
+            Log.d(TAG, "Logan open start");
             mLoganProtocol.logan_open(String.valueOf(mCurrentDay));
         }
 

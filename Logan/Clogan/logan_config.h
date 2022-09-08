@@ -80,8 +80,6 @@ typedef struct logan_model_struct {
 
     long file_len; //文件大小
 
-    int file_count; //文件数量
-    
     unsigned char *buffer_point; //缓存的指针 (不变)
     unsigned char *last_point; //最后写入位置的指针
     unsigned char *total_point; //总数的指针 (可能变) , 给c看,低字节
