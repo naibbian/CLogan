@@ -71,7 +71,7 @@ class LoganProtocol implements LoganProtocolHandler {
     }
 
     @Override
-    public void logan_init(String cache_path, String dir_path, int max_file, String encrypt_key_16,
+    public void logan_init(String cache_path, String dir_path, int max_file, int max_count, String encrypt_key_16,
                            String encrypt_iv_16) {
         if (mIsInit) {
             return;
@@ -79,7 +79,7 @@ class LoganProtocol implements LoganProtocolHandler {
         if (CLoganProtocol.isCloganSuccess()) {
             mCurProtocol = CLoganProtocol.newInstance();
             mCurProtocol.setOnLoganProtocolStatus(mLoganProtocolStatus);
-            mCurProtocol.logan_init(cache_path, dir_path, max_file, encrypt_key_16, encrypt_iv_16);
+            mCurProtocol.logan_init(cache_path, dir_path, max_file, max_count, encrypt_key_16, encrypt_iv_16);
             mIsInit = true;
         } else {
             mCurProtocol = null;

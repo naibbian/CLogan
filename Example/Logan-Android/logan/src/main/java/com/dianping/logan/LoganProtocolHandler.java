@@ -31,7 +31,7 @@ public interface LoganProtocolHandler {
 
     void logan_open(String file_name);
 
-    void logan_init(String cache_path, String dir_path, int max_file, String encrypt_key_16,
+    void logan_init(String cache_path, String dir_path, int max_file,int max_count, String encrypt_key_16,
             String encrypt_iv_16);
 
     void logan_debug(boolean debug);

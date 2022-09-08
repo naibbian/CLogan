@@ -69,7 +69,7 @@ class CLoganProtocol implements LoganProtocolHandler {
      * @param dir_path 目录路径
      * @param max_file 最大文件值
      */
-    private native int clogan_init(String cache_path, String dir_path, int max_file,
+    private native int clogan_init(String cache_path, String dir_path, int max_file,int max_count,
             String encrypt_key_16, String encrypt_iv_16);
 
     private native int clogan_open(String file_name);
@@ -90,7 +90,7 @@ class CLoganProtocol implements LoganProtocolHandler {
     private native void clogan_flush();
 
     @Override
-    public void logan_init(String cache_path, String dir_path, int max_file, String encrypt_key_16,
+    public void logan_init(String cache_path, String dir_path, int max_file,int max_count, String encrypt_key_16,
             String encrypt_iv_16) {
         if (mIsLoganInit) {
             return;
@@ -102,7 +102,7 @@ class CLoganProtocol implements LoganProtocolHandler {
         }
 
         try {
-            int code = clogan_init(cache_path, dir_path, max_file, encrypt_key_16, encrypt_iv_16);
+            int code = clogan_init(cache_path, dir_path, max_file,max_count, encrypt_key_16, encrypt_iv_16);
             mIsLoganInit = true;
             loganStatusCode(ConstantCode.CloganStatus.CLGOAN_INIT_STATUS, code);
         } catch (UnsatisfiedLinkError e) {

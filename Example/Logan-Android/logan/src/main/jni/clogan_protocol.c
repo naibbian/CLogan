@@ -41,14 +41,14 @@ Java_com_dianping_logan_CLoganProtocol_clogan_1write(JNIEnv *env, jobject instan
 JNIEXPORT jint JNICALL
 Java_com_dianping_logan_CLoganProtocol_clogan_1init(JNIEnv *env, jobject instance,
                                                     jstring cache_path_,
-                                                    jstring dir_path_, jint max_file,
+                                                    jstring dir_path_, jint max_file,jint max_count,
                                                     jstring encrypt_key16_, jstring encrypt_iv16_) {
     const char *dir_path = (*env)->GetStringUTFChars(env, dir_path_, 0);
     const char *cache_path = (*env)->GetStringUTFChars(env, cache_path_, 0);
     const char *encrypt_key16 = (*env)->GetStringUTFChars(env, encrypt_key16_, 0);
     const char *encrypt_iv16 = (*env)->GetStringUTFChars(env, encrypt_iv16_, 0);
 
-    jint code = (jint) clogan_init(cache_path, dir_path, max_file, encrypt_key16, encrypt_iv16);
+    jint code = (jint) clogan_init(cache_path, dir_path, max_file,max_count, encrypt_key16, encrypt_iv16);
 
     (*env)->ReleaseStringUTFChars(env, dir_path_, dir_path);
     (*env)->ReleaseStringUTFChars(env, cache_path_, cache_path);

@@ -58,6 +58,7 @@ class LoganThread extends Thread {
     private String mPath; //文件路径
     private long mSaveTime; //存储时间
     private long mMaxLogFile;//最大文件大小
+    private long mMaxLogFileCount = 4;//当日最多文件数量
     private long mMinSDCard;
     private String mEncryptKey16;
     private String mEncryptIv16;
@@ -132,7 +133,7 @@ class LoganThread extends Thread {
                     Logan.onListenerLogWriteStatus(cmd, code);
                 }
             });
-            mLoganProtocol.logan_init(mCachePath, mPath, (int) mMaxLogFile, mEncryptKey16,
+            mLoganProtocol.logan_init(mCachePath, mPath, (int) mMaxLogFile, (int) mMaxLogFileCount, mEncryptKey16,
                     mEncryptIv16);
             mLoganProtocol.logan_debug(Logan.sDebug);
         }

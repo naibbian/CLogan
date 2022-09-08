@@ -44,7 +44,7 @@ Java_com_dianping_logan_CLoganProtocol_clogan_1write(JNIEnv *env, jobject instan
 JNIEXPORT jint JNICALL
 Java_com_dianping_logan_CLoganProtocol_clogan_1init(JNIEnv *env, jobject instance,
                                                          jstring cache_path_,
-                                                         jstring dir_path_, jint max_file,
+                                                         jstring dir_path_, jint max_file, jint max_count,
                                                          jstring encrypt_key16_,
                                                          jstring encrypt_iv16_);
 
