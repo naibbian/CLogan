@@ -207,7 +207,7 @@ void read_mmap_data_clogan(const char *path_dirs) {
  * @param max_file  日志文件最大值
  */
 int
-clogan_init(const char *cache_dirs, const char *path_dirs, int max_file, const char *encrypt_key16,
+clogan_init(const char *cache_dirs, const char *path_dirs, int max_file,int max_count,const char *encrypt_key16,
             const char *encrypt_iv16) {
     int back = CLOGAN_INIT_FAIL_HEADER;
     if (is_init_ok ||
@@ -222,6 +222,12 @@ clogan_init(const char *cache_dirs, const char *path_dirs, int max_file, const c
         max_file_len = max_file;
     } else {
         max_file_len = LOGAN_LOGFILE_MAXLENGTH;
+    }
+
+    if (max_count > 0) {
+        max_file_count = max_count;
+    } else {
+        max_file_count = LOGAN_LOGFILE_MAXCOUNT;
     }
 
     if (NULL != _dir_path) { // 初始化时 , _dir_path和_mmap_file_path是非空值,先释放,再NULL
